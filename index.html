@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="ory-verify" content="PASTE_BELLANDCORNER_TOKEN_HERE">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Settle a fight bet without a bookmaker. A working Discreet Log Contract you can run in the browser: oracle announcement, anticipation points, adaptor signatures, settlement.">
+<meta name="twitter:creator" content="@faruukku">
+<link rel="me" href="https://x.com/faruukku">
+<link rel="icon" href="/logo.png">
+<meta property="og:title" content="Bell & Corner — a fight bet with no bookmaker">
+<meta property="og:description" content="A working Discreet Log Contract. The oracle never touches the money and cannot pay the wrong person.">
+<title>Bell &amp; Corner — a fight bet with no bookmaker</title>
+<style>
+  :root{
+    --bg:#0e1014; --panel:#171a20; --line:#272c35; --ink:#e9ecf1; --mut:#8a919d;
+    --red:#e5484d; --blue:#4a8fe7; --gold:#e8b339; --green:#3fb950;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;padding:0 20px}
+  .wrap{max-width:920px;margin:0 auto;padding-block:44px 80px}
+  header{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:26px}
+  h1{font-size:31px;margin:0 0 6px;letter-spacing:-.02em}
+  h1 .amp{color:var(--gold)}
+  .sub{color:var(--mut);margin:0}
+  h2{font-size:12px;text-transform:uppercase;letter-spacing:.13em;color:var(--mut);
+     margin:34px 0 11px;font-family:ui-monospace,Menlo,monospace}
+  p{margin:0 0 13px}
+  .lede{font-size:17px;color:#ccd2da}
+  .note{color:var(--mut);font-size:13px}
+  code,.m{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:18px;margin-bottom:12px}
+  button{font:inherit;font-size:14px;padding:9px 16px;border-radius:7px;cursor:pointer;
+    background:var(--gold);color:#1b1405;border:none;font-weight:600}
+  button:hover{filter:brightness(1.08)}
+  button.r{background:var(--red);color:#fff}
+  button.b{background:var(--blue);color:#fff}
+  button.g{background:transparent;color:var(--blue);border:1px solid var(--line);font-weight:400}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .row{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:4px}
+  .out{margin-top:13px;padding:13px;background:#0b0d11;border:1px solid var(--line);
+       border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;word-break:break-all}
+  .k{color:var(--mut);font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+  .v{margin-bottom:11px}.v:last-child{margin-bottom:0}
+  .corners{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:620px){.corners{grid-template-columns:1fr}}
+  .corner{border:1px solid var(--line);border-radius:10px;padding:15px;background:#0b0d11}
+  .corner.red{border-left:4px solid var(--red)}
+  .corner.blue{border-left:4px solid var(--blue)}
+  .corner h3{margin:0 0 4px;font-size:15px}
+  .corner .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:9px 0 3px}
+  .corner .val{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;word-break:break-all;color:#c3cad4}
+  .tag{display:inline-block;font-family:ui-monospace,Menlo,monospace;font-size:11px;
+    padding:3px 8px;border-radius:5px;border:1px solid var(--line);color:var(--mut)}
+  .tag.win{border-color:var(--green);color:var(--green)}
+  .tag.lose{border-color:var(--red);color:var(--red)}
+  .tag.locked{border-color:var(--gold);color:var(--gold)}
+  .err{background:rgba(229,72,77,.1);border:1px solid rgba(229,72,77,.35);color:#ffb3b3;
+    border-radius:8px;padding:11px;font-size:13.5px;margin-top:11px}
+  footer{margin-top:50px;padding-top:20px;border-top:1px solid var(--line);color:var(--mut);font-size:13.5px}
+  a{color:var(--blue)}
+  .step{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Bell <span class="amp">&amp;</span> Corner</h1>
+  <p class="sub">A fight bet that settles itself. No bookmaker, no escrow, no custody.</p>
+</header>
+
+<p class="lede">
+  Betting on a fight normally means trusting whoever holds the money. A Discreet Log Contract
+  removes that party. Two people lock funds, an oracle publishes one signature saying who won,
+  and that signature is the only thing needed to release the money to the right person.
+</p>
+<p class="note">
+  The oracle never touches the funds, never learns the contract exists, and cannot pay the wrong
+  person even if it wanted to. This page implements that mechanism and lets you run it: BIP-340
+  oracle attestation, anticipation points and Schnorr adaptor signatures, all computed in this
+  tab. No server, no node, no wallet.
+</p>
+
+<h2><span class="step">1</span> · Announce the fight</h2>
+<p class="note">
+  Before the fight, the oracle publishes a public key and a one-time nonce, and names the
+  possible outcomes. That is the whole announcement. It says nothing about who will win and
+  nothing about any bet.
+</p>
+<div class="panel">
+  <div class="row"><button id="announce">Publish an announcement</button></div>
+  <div id="annOut"></div>
+</div>
+
+<h2><span class="step">2</span> · What the bettors can compute in advance</h2>
+<p class="note">
+  From that announcement alone, anyone can work out the exact point the oracle's future signature
+  will land on, for each outcome. These are the anticipation points. They can be computed now,
+  but nobody can produce the matching signature until the oracle chooses.
+</p>
+<div class="panel"><div id="antOut"><p class="note">Publish an announcement first.</p></div></div>
+
+<h2><span class="step">3</span> · Lock the bet</h2>
+<p class="note">
+  Each side signs a payout, but encrypted to its outcome's anticipation point. The result is an
+  adaptor signature: provably correct, and useless until the matching oracle signature exists.
+</p>
+<div class="panel">
+  <div class="row"><button id="lock" disabled>Build the contract</button></div>
+  <div id="lockOut"></div>
+</div>
+
+<h2><span class="step">4</span> · The fight ends</h2>
+<p class="note">
+  The oracle signs one outcome and publishes a single number. It does not know who bet, how much,
+  or that this contract exists.
+</p>
+<div class="panel">
+  <div class="row">
+    <button class="r" id="winA" disabled>Red corner wins</button>
+    <button class="b" id="winB" disabled>Blue corner wins</button>
+  </div>
+  <div id="settleOut"></div>
+</div>
+
+<h2>Why the oracle cannot cheat</h2>
+<p>
+  It signs an outcome, not a payout. The same signature settles every contract on that fight
+  anywhere in the world, and settles none of them differently. It cannot pay the loser, because
+  the loser's adaptor signature only completes with a number the oracle did not publish. It
+  cannot steal, because it never held anything.
+</p>
+<p class="note">
+  Implemented: BIP-340 oracle attestation, anticipation point derivation, Schnorr adaptor
+  signature creation and completion, and verification that the wrong outcome fails to complete.
+  Not implemented: funding transactions, CET construction and broadcast. This page proves the
+  settlement mechanism; it does not move coins.
+</p>
+
+<footer>
+  <p><a href="https://github.com/Leihyn/bellandcorner">Source</a> · <a href="https://x.com/faruukku">@faruukku</a></p>
+  <p class="note">Demonstration keys. Do not paste a key that holds funds.</p>
+</footer>
+
+</div>
+
+<script type="module">
+import { ProjectivePoint as P } from './secp256k1.js';
+const N = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141n;
+const G = P.BASE;
+const $ = s => document.getElementById(s);
+const b2h = b => [...b].map(x => x.toString(16).padStart(2, "0")).join("");
+const h2b = h => Uint8Array.from(h.match(/.{1,2}/g).map(x => parseInt(x, 16)));
+const cat = (...a) => { const t = new Uint8Array(a.reduce((n, x) => n + x.length, 0)); let o = 0; for (const x of a) { t.set(x, o); o += x.length; } return t; };
+const sha = async b => new Uint8Array(await crypto.subtle.digest("SHA-256", b));
+const tagged = async (t, m) => { const h = await sha(new TextEncoder().encode(t)); return sha(cat(h, h, m)); };
+const mod = x => ((x % N) + N) % N;
+const b2n = b => BigInt("0x" + b2h(b));
+const rnd = () => { const b = new Uint8Array(32); crypto.getRandomValues(b); return b2n(b) % N; };
+const xonly = pt => h2b(pt.toHex(true).slice(2));
+const liftx = x => P.fromHex("02" + b2h(x));
+const evenify = d => { const pt = G.mul(mod(d)); return (pt.toAffine().y & 1n) === 0n ? [mod(d), pt] : [mod(N - d), G.mul(mod(N - d))]; };
+const enc = s => new TextEncoder().encode(s);
+const shortn = (h, n = 22) => h.slice(0, n) + "…";
+
+const OUT_A = "RED_CORNER_WINS", OUT_B = "BLUE_CORNER_WINS";
+let O = null, C = null;
+
+async function challenge(Rpt, Ppt, msg) {
+  return b2n(await tagged("BIP0340/challenge", cat(xonly(Rpt), xonly(Ppt), enc(msg))));
+}
+async function anticipation(msg) {
+  const e = await challenge(O.R, O.P, msg);
+  return liftx(xonly(O.R)).add(liftx(xonly(O.P)).mul(mod(e)));
+}
+async function attest(msg) {
+  const e = await challenge(O.R, O.P, msg);
+  return mod(O.k + mod(e * O.x));
+}
+
+$("announce").onclick = async () => {
+  const [x, Pp] = evenify(rnd()), [k, Rp] = evenify(rnd());
+  O = { x, P: Pp, k, R: Rp };
+  $("annOut").innerHTML = `<div class="out">
+    <div class="k">Oracle public key</div><div class="v">${b2h(xonly(O.P))}</div>
+    <div class="k">One-time nonce for this fight</div><div class="v">${b2h(xonly(O.R))}</div>
+    <div class="k">Outcomes it will attest to</div>
+    <div class="v"><span class="tag">${OUT_A}</span> <span class="tag">${OUT_B}</span></div>
+    <div class="k">What it has revealed about the result</div><div class="v">nothing</div></div>`;
+  const SA = await anticipation(OUT_A), SB = await anticipation(OUT_B);
+  C = { SA, SB, locked: false };
+  $("antOut").innerHTML = `<div class="corners">
+    <div class="corner red"><h3>Red corner</h3><span class="tag">${OUT_A}</span>
+      <div class="lbl">Anticipation point</div><div class="val">${SA.toHex(true)}</div></div>
+    <div class="corner blue"><h3>Blue corner</h3><span class="tag">${OUT_B}</span>
+      <div class="lbl">Anticipation point</div><div class="val">${SB.toHex(true)}</div></div>
+  </div>
+  <p class="note" style="margin-top:11px">Computed from the announcement, before the fight. The
+  oracle's signature for an outcome is the discrete log of that outcome's point, and it does not
+  exist yet.</p>`;
+  $("lock").disabled = false; $("winA").disabled = true; $("winB").disabled = true;
+  $("lockOut").innerHTML = ""; $("settleOut").innerHTML = "";
+};
+
+$("lock").onclick = async () => {
+  try {
+    const mk = async (S, who) => {
+      const y = rnd(), Y = G.mul(y), r = rnd();
+      const Ra = G.mul(r).add(S);
+      const e = await challenge(Ra, Y, "bellandcorner:fight-001:" + who);
+      return { y, Y, r, Ra, e, sa: mod(r + mod(e * y)) };
+    };
+    C.A = await mk(C.SA, "red"); C.B = await mk(C.SB, "blue"); C.locked = true;
+    $("lockOut").innerHTML = `<div class="corners">
+      <div class="corner red"><h3>If red wins</h3>
+        <div class="lbl">Adaptor signature</div><div class="val">${C.A.sa.toString(16).padStart(64, "0")}</div>
+        <div class="lbl">Status</div><div><span class="tag locked">locked to ${OUT_A}</span></div></div>
+      <div class="corner blue"><h3>If blue wins</h3>
+        <div class="lbl">Adaptor signature</div><div class="val">${C.B.sa.toString(16).padStart(64, "0")}</div>
+        <div class="lbl">Status</div><div><span class="tag locked">locked to ${OUT_B}</span></div></div>
+    </div>
+    <p class="note" style="margin-top:11px">Both payouts are now signed and neither is valid.
+    Each becomes a real signature only when added to its own outcome's oracle scalar.</p>`;
+    $("winA").disabled = false; $("winB").disabled = false;
+  } catch (e) { $("lockOut").innerHTML = `<div class="err">${e.message}</div>`; }
+};
+
+async function settle(winner) {
+  try {
+    if (!C || !C.locked) throw new Error("Build the contract first.");
+    const msg = winner === "A" ? OUT_A : OUT_B;
+    const s = await attest(msg);
+    const predicted = winner === "A" ? C.SA : C.SB;
+    const proof = G.mul(s).toHex(true) === predicted.toHex(true);
+    const check = (leg, scalar) => {
+      const full = mod(leg.sa + scalar);
+      return G.mul(full).toHex(true) === leg.Ra.add(leg.Y.mul(mod(leg.e))).toHex(true);
+    };
+    const aOK = check(C.A, s), bOK = check(C.B, s);
+    const winnerOK = winner === "A" ? aOK : bOK, loserOK = winner === "A" ? bOK : aOK;
+    $("settleOut").innerHTML = `<div class="out">
+      <div class="k">The oracle published one number</div><div class="v">${s.toString(16).padStart(64, "0")}</div>
+      <div class="k">Does it match the point everyone precomputed?</div>
+      <div class="v ${proof ? "" : ""}" style="color:${proof ? "var(--green)" : "var(--red)"}">${proof ? "yes, s·G equals the anticipation point" : "no"}</div>
+    </div>
+    <div class="corners" style="margin-top:12px">
+      <div class="corner ${winner === "A" ? "red" : "blue"}"><h3>${winner === "A" ? "Red" : "Blue"} corner</h3>
+        <div class="lbl">Payout signature</div>
+        <div><span class="tag ${winnerOK ? "win" : "lose"}">${winnerOK ? "completes, valid, pays out" : "failed"}</span></div></div>
+      <div class="corner ${winner === "A" ? "blue" : "red"}"><h3>${winner === "A" ? "Blue" : "Red"} corner</h3>
+        <div class="lbl">Payout signature</div>
+        <div><span class="tag ${loserOK ? "win" : "lose"}">${loserOK ? "completes (THIS WOULD BE A BUG)" : "stays locked, cannot pay"}</span></div></div>
+    </div>
+    <p class="note" style="margin-top:11px">One signature settled the contract. The losing side's
+    adaptor signature is still just as unusable as before, because completing it needs a number
+    the oracle never published. The oracle chose an outcome, not a winner of this bet.</p>`;
+  } catch (e) { $("settleOut").innerHTML = `<div class="err">${e.message}</div>`; }
+}
+$("winA").onclick = () => settle("A");
+$("winB").onclick = () => settle("B");
+
+if (new URLSearchParams(location.search).has("demo")) {
+  $("announce").click();
+  setTimeout(async () => { await $("lock").onclick(); await settle("A"); }, 260);
+}
+</script>
+</body>
+</html>
